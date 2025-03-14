@@ -1,18 +1,29 @@
-# Use the official OpenJDK 17 image as a base
-FROM maven:3.8.4-openjdk-17 AS build
+# Step 1: Use Maven image to build the application
+FROM maven:3.8.5-openjdk-17 AS build
 
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Add a volume to store logs
-VOLUME /tmp
+# Copy pom.xml and dependencies separately (to leverage Docker cache)
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Copy the JAR file to the container
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
+# Copy source code and build the application
+COPY src ./src
+RUN mvn package -DskipTests
 
-# Expose port 8080 (or your configured port)
-EXPOSE 8080
+# Step 2: Use OpenJDK to run the built application
+FROM openjdk:17-jdk-slim
 
-# Run the Spring Boot app
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Set working directory
+WORKDIR /app
+
+# Copy the built JAR file from the Maven container
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose the application port
+EXPOSE 9090
+
+# Run the Spring Boot application
+CMD ["java", "-jar", "app.jar"]
+
