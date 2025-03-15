@@ -23,7 +23,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=Dhanya@123
 
   frontend:
-    build: ./frontend-react
+    build: ./fontend-react
     ports:
       - "3000:80"
     environment:
