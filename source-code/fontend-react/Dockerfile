@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build  
 
 # Final Stage: Use lightweight Nginx to serve the frontend
-FROM node
+FROM nginx:alpine  # Use Nginx, not Node.js
 
 # Remove default Nginx configuration (optional)
 RUN rm -rf /etc/nginx/conf.d
