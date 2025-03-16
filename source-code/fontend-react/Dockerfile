@@ -11,7 +11,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --only=production
 
 # Copy the rest of the source code
-COPY . .
+COPY ./ /app/
 
 # Build the React app
 RUN npm run build
