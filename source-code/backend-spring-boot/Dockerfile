@@ -1,31 +1,27 @@
-# Use the official Maven image with OpenJDK 17 for the build phase
+# Build Stage
 FROM maven:3.8.4-openjdk-17 AS build
-
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the pom.xml and any other necessary files for building the project
+# Copy pom.xml and resolve dependencies (cache layer)
 COPY pom.xml .
-
-# Download dependencies (this will cache dependencies layer)
 RUN mvn dependency:go-offline
 
-# Copy the rest of the application source code
+# Copy source code and build the application
 COPY src ./src
+RUN mvn clean package -DskipTests -T 1C  # Enables multithreading
 
-# Build the JAR file
-RUN mvn clean package -DskipTests
-
-# Use a different OpenJDK 17 runtime image for the final image
-FROM openjdk:17 AS runtime
-
-# Set the working directory inside the container
+# Production Runtime
+FROM eclipse-temurin:17-jdk-jammy AS runtime  # Smaller base image
 WORKDIR /app
 
-# Copy the generated JAR file from the build phase
+# Copy only the built JAR from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose port 9090 (or your configured port)
+# Use a non-root user for security (optional but recommended)
+RUN useradd -m myuser
+USER myuser
+
+# Expose the application port
 EXPOSE 7070
 
 # Run the Spring Boot application
