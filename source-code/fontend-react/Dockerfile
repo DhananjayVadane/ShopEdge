@@ -1,5 +1,5 @@
 # Build Stage
-FROM node:18-alpine AS build
+FROM node AS build
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build  
 
 # Final Stage: Use lightweight Nginx to serve the frontend
-FROM node:18-alpine
+FROM node
 
 # Remove default Nginx configuration (optional)
 RUN rm -rf /etc/nginx/conf.d
